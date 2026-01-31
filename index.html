@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flotte Impériale Eclipse — Transmission</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg" id="bg"></div>
+  <div class="overlay vignette"></div>
+  <div class="overlay grid"></div>
+  <div class="overlay scanlines"></div>
+  <div class="overlay grain"></div>
+
+  <main class="wrap">
+    <header class="top">
+      <div class="brand">
+        <img class="logo" src="assets/img/logo.png" alt="Flotte Impériale Eclipse" onerror="this.style.display='none'" />
+        <div class="brandText">
+          <div class="name">FLOTTE IMPÉRIALE ECLIPSE</div>
+          <div class="sub">IMPERIAL NETWORK • SECURE MILITARY CHANNEL</div>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="metaRow"><span class="k">CANAL</span><span class="v" id="srvName">—</span></div>
+        <div class="metaRow"><span class="k">PLANÈTE</span><span class="v" id="mapName">—</span></div>
+        <div class="metaRow"><span class="k">OPÉRATION</span><span class="v" id="gmName">—</span></div>
+      </div>
+    </header>
+
+    <section class="gridLayout">
+      <section class="panel mainPanel">
+        <div class="panelHead">
+          <div class="left">
+            <span class="dot"></span>
+            <span class="title">TRANSMISSION • BOOT SEQUENCE</span>
+          </div>
+
+          <div class="right">
+            <div class="statusLights" aria-hidden="true">
+              <span class="light red"></span>
+              <span class="light amber"></span>
+              <span class="light green"></span>
+            </div>
+            <span class="chip alert" id="signalChip">SIGNAL: IMPERIAL CONTROL</span>
+          </div>
+        </div>
+
+        <div class="terminal">
+          <div class="cols">
+            <div class="col">
+              <div class="blockTitle">[TRANSFER DOSSIER]</div>
+              <div class="kv">
+                <div class="kvRow"><span class="kk">DATE</span><span class="vv" id="cycDate">CYC-00.0000.00</span></div>
+                <div class="kvRow"><span class="kk">TEMP</span><span class="vv" id="tempExt">—</span></div>
+                <div class="kvRow"><span class="kk">TRNS</span><span class="vv" id="transportId">—</span></div>
+                <div class="kvRow"><span class="kk">ID</span><span class="vv" id="imperialId">—</span></div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="log" id="log">
+                <div class="line dim">[SYS] Initialisation des modules…</div>
+                <div class="line dim">[SEC] Vérification des clés d’accès…</div>
+                <div class="line" id="bootLine">[NET] Synchronisation des protocoles impériaux…</div>
+                <div class="line dim" id="statusText">[DL] En attente…</div>
+              </div>
+
+              <div class="cursorRow">
+                <span class="cursorLabel">CHANNEL</span>
+                <span class="cursorValue" id="channelName">IMPERIAL/SECURE</span>
+                <span class="cursor" aria-hidden="true"></span>
+              </div>
+
+              <div class="dataFlux" aria-hidden="true">
+                <span class="dataLabel">DATA FLUX</span>
+                <div class="fluxBar"><div class="fluxFill"></div></div>
+                <div class="fluxNoise"></div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="blockTitle">[TACTICAL OVERVIEW]</div>
+              <div class="tactical">
+                <div class="tRow"><span class="tK">ALERTE</span><span class="tV" id="tAlert">NIVEAU II</span></div>
+                <div class="tRow"><span class="tK">SECTEUR</span><span class="tV" id="tSector">OUTER RIM</span></div>
+                <div class="tRow"><span class="tK">STATUT</span><span class="tV" id="tStatus">STABILISATION</span></div>
+                <div class="tRow"><span class="tK">RAPPORTS</span><span class="tV" id="tReports">EN COURS</span></div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="blockTitle">[SECURITY CHECKS]</div>
+              <div class="checks">
+                <div class="check"><span class="checkDot ok"></span><span class="checkTxt">Authentification canal</span><span class="checkRes" id="chkAuth">OK</span></div>
+                <div class="check"><span class="checkDot warn"></span><span class="checkTxt">Analyse trafic</span><span class="checkRes" id="chkTraffic">SCAN</span></div>
+                <div class="check"><span class="checkDot warn"></span><span class="checkTxt">Brouillage externe</span><span class="checkRes" id="chkJam">N/A</span></div>
+                <div class="check"><span class="checkDot ok"></span><span class="checkTxt">Intégrité modules</span><span class="checkRes" id="chkIntegrity">OK</span></div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="blockTitle">[UNIT STATUS]</div>
+              <div class="unitGrid">
+                <div class="unit"><span class="uK">STORM</span><span class="uV" id="uStorm">DÉPLOIEMENT</span></div>
+                <div class="unit"><span class="uK">SCOUT</span><span class="uV" id="uScout">PATROUILLE</span></div>
+                <div class="unit"><span class="uK">NAVY</span><span class="uV" id="uNavy">ORBITAL</span></div>
+                <div class="unit"><span class="uK">ISB</span><span class="uV" id="uIsb">SURVEILLANCE</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress">
+          <div class="bar">
+            <div class="fill" id="progressFill" style="width:0%"></div>
+          </div>
+          <div class="progressMeta">
+            <span class="p" id="progressPct">0%</span>
+            <span class="sep">•</span>
+            <span class="m" id="progressFiles">0/0 fichiers</span>
+            <span class="sep">•</span>
+            <span class="m" id="progressStatus">STANDBY</span>
+          </div>
+        </div>
+
+        <div class="bottomHints">
+          <div class="hint"><span class="tag">DOCTRINE</span><span id="doctrineLine">Respect de la chaîne de commandement. Discipline = crédibilité.</span></div>
+          <div class="hint"><span class="tag">COMMS</span><span id="tipLine">Canal sécurisé. Communications brèves. Exécution immédiate.</span></div>
+        </div>
+      </section>
+
+      <aside class="panel sidePanel">
+        <div class="panelHead">
+          <div class="left">
+            <span class="dot"></span>
+            <span class="title">RÉSEAU • TRANSMISSIONS</span>
+          </div>
+          <div class="right">
+            <div class="statusLights" aria-hidden="true">
+              <span class="light red slow"></span>
+              <span class="light amber"></span>
+              <span class="light green slow"></span>
+            </div>
+            <span class="chip chipLive">LIVE</span>
+          </div>
+        </div>
+
+        <div class="feeds">
+          <div class="feedBox">
+            <div class="feedHead">
+              <div class="feedBadge">TRANSMISSION CRYPTÉE</div>
+              <div class="feedSmall" id="milClock">—</div>
+            </div>
+            <div class="feedBody">
+              <div class="feedLine" id="milLine">Chargement des bulletins…</div>
+              <div class="feedSub" id="milSub">Réseau impérial : protocole sécurisé actif.</div>
+            </div>
+          </div>
+
+          <div class="feedBox">
+            <div class="feedHead">
+              <div class="feedBadge">HOLO-NET IMPÉRIALE</div>
+              <div class="feedSmall" id="newsClock">—</div>
+            </div>
+            <div class="feedBody">
+              <div class="feedLine" id="newsLine">Initialisation des journalistes…</div>
+              <div class="feedSub" id="newsSub">Bulletin public : diffusion en continu.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards">
+          <div class="card">
+            <div class="cardTitle">Ralliement</div>
+            <div class="cardBody">
+              Centre de transmissions, annonces, régiments, support.
+              <div class="link" id="discordLink">discord.gg/TONLIEN</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="cardTitle">Statut liaison</div>
+            <div class="cardBody">
+              <div class="miniRow"><span class="k">IDENTIFIANT</span><span class="v" id="steam64">—</span></div>
+              <div class="miniRow"><span class="k">PHASE</span><span class="v" id="phase">INIT</span></div>
+              <div class="miniRow"><span class="k">CANAL</span><span class="v" id="channelEcho">SECURE</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sideFooter">
+          <button class="audioBtn" id="audioBtn" type="button">AUDIO: OFF</button>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <audio id="ambience" loop preload="auto">
+    <source src="assets/audio/ambience.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script src="app.js"></script>
+</body>
+</html>
