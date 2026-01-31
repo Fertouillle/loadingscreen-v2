@@ -36,21 +36,6 @@ const ui = {
   newsLine: el("newsLine"),
   newsSub: el("newsSub"),
 
-  tAlert: el("tAlert"),
-  tSector: el("tSector"),
-  tStatus: el("tStatus"),
-  tReports: el("tReports"),
-
-  chkAuth: el("chkAuth"),
-  chkTraffic: el("chkTraffic"),
-  chkJam: el("chkJam"),
-  chkIntegrity: el("chkIntegrity"),
-
-  uStorm: el("uStorm"),
-  uScout: el("uScout"),
-  uNavy: el("uNavy"),
-  uIsb: el("uIsb"),
-
   audioBtn: el("audioBtn"),
   ambience: el("ambience")
 };
@@ -58,6 +43,9 @@ const ui = {
 let filesNeeded = 0;
 let filesDownloaded = 0;
 let lastPct = 0;
+
+const AUDIO_DEFAULT_VOLUME = 0.08;
+const AUDIO_RETRY_DELAY_MS = 15000;
 
 function pad2(n){ return String(n).padStart(2, "0"); }
 
@@ -143,30 +131,32 @@ function setProgress(pct){
   pct = Math.max(0, Math.min(100, pct));
   if (pct < lastPct) return;
   lastPct = pct;
-  ui.progressFill.style.width = pct.toFixed(0) + "%";
-  ui.progressPct.textContent = pct.toFixed(0) + "%";
+  if (ui.progressFill) ui.progressFill.style.width = pct.toFixed(0) + "%";
+  if (ui.progressPct) ui.progressPct.textContent = pct.toFixed(0) + "%";
 }
 
 function setFilesText(){
-  ui.progressFiles.textContent = `${filesDownloaded}/${filesNeeded} fichiers`;
+  if (ui.progressFiles) ui.progressFiles.textContent = `${filesDownloaded}/${filesNeeded} fichiers`;
 }
 
 function setStatusLine(text){
-  ui.statusText.textContent = text;
+  if (ui.statusText) ui.statusText.textContent = text;
 }
 
 function setPhase(text){
-  ui.phase.textContent = text;
-  ui.progressStatus.textContent = text;
+  if (ui.phase) ui.phase.textContent = text;
+  if (ui.progressStatus) ui.progressStatus.textContent = text;
 }
 
 function setSignalBoot(){
+  if (!ui.signalChip) return;
   ui.signalChip.textContent = "SIGNAL: IMPERIAL CONTROL";
   ui.signalChip.classList.add("alert");
   ui.signalChip.classList.remove("ok");
 }
 
 function setSignalLocked(){
+  if (!ui.signalChip) return;
   ui.signalChip.textContent = "SIGNAL: LOCKED";
   ui.signalChip.classList.remove("alert");
   ui.signalChip.classList.add("ok");
@@ -174,7 +164,9 @@ function setSignalLocked(){
 
 function applyBackground(){
   const img = new Image();
-  img.onload = () => ui.bg.classList.add("bg-ready");
+  img.onload = () => {
+    if (ui.bg) ui.bg.classList.add("bg-ready");
+  };
   img.onerror = () => {};
   img.src = "assets/img/bg.jpg";
 }
@@ -287,45 +279,46 @@ const holonetNewsBase = [
   "HOLO-NET : enquête en cours après perturbation HoloNet. Relais de secours activés."
 ];
 
-
 let bootIdx = 0;
 let rotIdx = 0;
 
 function startBootSequence(){
   setInterval(() => {
     bootIdx = (bootIdx + 1) % bootRotation.length;
-    ui.bootLine.textContent = bootRotation[bootIdx];
-    if (cryptoInt(12) === 0) glitchTextOnce(ui.bootLine);
+    if (ui.bootLine) ui.bootLine.textContent = bootRotation[bootIdx];
+    if (cryptoInt(12) === 0 && ui.bootLine) glitchTextOnce(ui.bootLine);
   }, 1700);
 }
 
 function startRotations(){
   setInterval(() => {
     rotIdx = (rotIdx + 1) % doctrineRotation.length;
-    ui.doctrineLine.textContent = doctrineRotation[rotIdx];
-    ui.tipLine.textContent = commsRotation[rotIdx % commsRotation.length];
-    if (cryptoInt(10) === 0) glitchTextOnce(ui.tipLine);
+    if (ui.doctrineLine) ui.doctrineLine.textContent = doctrineRotation[rotIdx];
+    if (ui.tipLine) ui.tipLine.textContent = commsRotation[rotIdx % commsRotation.length];
+    if (cryptoInt(10) === 0 && ui.tipLine) glitchTextOnce(ui.tipLine);
   }, 5200);
 }
 
 function updateCycClock(){
-  ui.cycDate.textContent = getCycDateString(new Date());
+  if (ui.cycDate) ui.cycDate.textContent = getCycDateString(new Date());
 }
 
 function seedSessionFields(){
   const t = genTempC();
-  ui.tempExt.textContent = (t >= 0 ? "+" : "") + t + "°C";
-  ui.transportId.textContent = genTransportId();
+  if (ui.tempExt) ui.tempExt.textContent = (t >= 0 ? "+" : "") + t + "°C";
+  if (ui.transportId) ui.transportId.textContent = genTransportId();
 }
 
 function updateFeedClock(node){
+  if (!node) return;
   const now = new Date();
   const hh = pad2(now.getHours());
   const mm = pad2(now.getMinutes());
   node.textContent = `CYC ${getCycDateString(now)} • ${hh}:${mm}`;
 }
 
-function startFeed(lineNode, subNode, clockNode, base, subPool){
+function startFeed(lineNode, subNode, clockNode, base, subPool, intervalMs){
+  if (!lineNode || !subNode || !clockNode) return;
   const feed = shuffle(base.slice());
   let idx = 0;
 
@@ -338,32 +331,53 @@ function startFeed(lineNode, subNode, clockNode, base, subPool){
   };
 
   push();
-  setInterval(push, 3800);
+  setInterval(push, intervalMs);
   setInterval(() => updateFeedClock(clockNode), 30000);
 }
 
-function seedPanels(){
-  const alert = ["NIVEAU I", "NIVEAU II", "NIVEAU III"];
-  const sector = ["CORE WORLDS", "MID RIM", "OUTER RIM"];
-  const status = ["STABILISATION", "RATISSAGE", "ESCORTE", "SURVEILLANCE"];
-  const reports = ["EN COURS", "PRIORITAIRES", "ARCHIVAGE", "VALIDATION"];
+let audioWanted = true;
 
-  ui.tAlert.textContent = alert[cryptoInt(alert.length)];
-  ui.tSector.textContent = sector[cryptoInt(sector.length)];
-  ui.tStatus.textContent = status[cryptoInt(status.length)];
-  ui.tReports.textContent = reports[cryptoInt(reports.length)];
+function setAudioButton(){
+  if (!ui.audioBtn) return;
+  ui.audioBtn.textContent = audioWanted ? "AUDIO: ON" : "AUDIO: OFF";
+}
 
-  const chk = ["OK", "SCAN", "N/A", "LOCK"];
-  ui.chkAuth.textContent = "OK";
-  ui.chkTraffic.textContent = chk[cryptoInt(chk.length)];
-  ui.chkJam.textContent = chk[cryptoInt(chk.length)];
-  ui.chkIntegrity.textContent = "OK";
+function tryPlayAudio(){
+  const a = ui.ambience;
+  if (!a) return;
 
-  const u = ["DÉPLOIEMENT", "PATROUILLE", "ORBITAL", "SURVEILLANCE", "EN ROUTE", "EN VEILLE"];
-  ui.uStorm.textContent = u[cryptoInt(u.length)];
-  ui.uScout.textContent = u[cryptoInt(u.length)];
-  ui.uNavy.textContent = u[cryptoInt(u.length)];
-  ui.uIsb.textContent = u[cryptoInt(u.length)];
+  a.volume = AUDIO_DEFAULT_VOLUME;
+
+  if (!audioWanted){
+    if (!a.paused) a.pause();
+    return;
+  }
+
+  const p = a.play();
+  if (p && typeof p.then === "function"){
+    p.then(() => {
+      setAudioButton();
+    }).catch(() => {
+      setAudioButton();
+    });
+  } else {
+    setAudioButton();
+  }
+}
+
+function stopAudio(){
+  const a = ui.ambience;
+  if (!a) return;
+  a.pause();
+}
+
+if (ui.audioBtn){
+  ui.audioBtn.addEventListener("click", () => {
+    audioWanted = !audioWanted;
+    if (!audioWanted) stopAudio();
+    else tryPlayAudio();
+    setAudioButton();
+  });
 }
 
 applyBackground();
@@ -372,7 +386,6 @@ seedSessionFields();
 updateCycClock();
 startBootSequence();
 startRotations();
-seedPanels();
 
 setInterval(updateCycClock, 60 * 1000);
 setTimeout(setSignalLocked, 2200);
@@ -388,7 +401,8 @@ startFeed(
     "Canal réservé. Toute perturbation sera neutralisée.",
     "Ordres transmis aux unités. Exécution attendue.",
     "Réseau militaire : chiffrement renforcé."
-  ]
+  ],
+  3800
 );
 
 startFeed(
@@ -402,31 +416,24 @@ startFeed(
     "HoloNet : informations validées par les autorités.",
     "Média : reportage en cours sur les secteurs civils.",
     "Annonce : directives citoyennes actualisées."
-  ]
+  ],
+  4100
 );
 
-ui.audioBtn.addEventListener("click", () => {
-  const a = ui.ambience;
-  if (!a) return;
-
-  if (a.paused) {
-    a.volume = 0.16;
-    a.play().catch(() => {});
-    ui.audioBtn.textContent = "AUDIO: ON";
-  } else {
-    a.pause();
-    ui.audioBtn.textContent = "AUDIO: OFF";
-  }
-});
+setAudioButton();
+tryPlayAudio();
+setTimeout(() => {
+  tryPlayAudio();
+}, AUDIO_RETRY_DELAY_MS);
 
 window.GameDetails = function(servername, serverurl, mapname, maxplayers, steamid, gamemode){
-  ui.srvName.textContent = servername ? String(servername).toUpperCase() : "CANAL-SECURE";
-  ui.mapName.textContent = formatPlanet(mapname);
-  ui.gmName.textContent = gamemode ? String(gamemode).toUpperCase() : "OPÉRATION ACTIVE";
+  if (ui.srvName) ui.srvName.textContent = servername ? String(servername).toUpperCase() : "CANAL-SECURE";
+  if (ui.mapName) ui.mapName.textContent = formatPlanet(mapname);
+  if (ui.gmName) ui.gmName.textContent = gamemode ? String(gamemode).toUpperCase() : "OPÉRATION ACTIVE";
 
-  ui.steam64.textContent = steamid || "—";
-  ui.imperialId.textContent = steam64ToImperialId(steamid || "0");
-  ui.channelEcho.textContent = "SECURE";
+  if (ui.steam64) ui.steam64.textContent = steamid || "—";
+  if (ui.imperialId) ui.imperialId.textContent = steam64ToImperialId(steamid || "0");
+  if (ui.channelEcho) ui.channelEcho.textContent = "SECURE";
 };
 
 window.SetStatusChanged = function(status){
@@ -480,29 +487,3 @@ window.DownloadingFile = function(fileName){
     setProgress(Math.min(95, lastPct + 2));
   }
 };
-
-function setFilesText(){
-  ui.progressFiles.textContent = `${filesDownloaded}/${filesNeeded} fichiers`;
-}
-
-function setProgress(pct){
-  pct = Math.max(0, Math.min(100, pct));
-  if (pct < lastPct) return;
-  lastPct = pct;
-  ui.progressFill.style.width = pct.toFixed(0) + "%";
-  ui.progressPct.textContent = pct.toFixed(0) + "%";
-}
-
-function autoPlayAmbience(){
-  const a = ui.ambience;
-  if (!a) return;
-
-  a.volume = 0.16;
-  a.play().then(() => {
-    ui.audioBtn.textContent = "AUDIO: ON";
-  }).catch(() => {
-    ui.audioBtn.textContent = "AUDIO: OFF";
-  });
-}
-
-window.addEventListener("load", autoPlayAmbience);
