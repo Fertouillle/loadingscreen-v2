@@ -47,6 +47,9 @@ let lastPct = 0;
 const AUDIO_DEFAULT_VOLUME = 0.08;
 const AUDIO_RETRY_DELAY_MS = 15000;
 
+let audioWanted = true;
+let audioEndedOnce = false;
+
 function pad2(n){ return String(n).padStart(2, "0"); }
 
 function getISOWeek(date){
@@ -164,9 +167,7 @@ function setSignalLocked(){
 
 function applyBackground(){
   const img = new Image();
-  img.onload = () => {
-    if (ui.bg) ui.bg.classList.add("bg-ready");
-  };
+  img.onload = () => { if (ui.bg) ui.bg.classList.add("bg-ready"); };
   img.onerror = () => {};
   img.src = "assets/img/bg.jpg";
 }
@@ -185,6 +186,67 @@ function glitchTextOnce(node){
   }
   node.textContent = arr.join("");
   setTimeout(() => { node.textContent = original; }, 90 + cryptoInt(140));
+}
+
+function setAudioButton(){
+  if (!ui.audioBtn) return;
+  ui.audioBtn.textContent = audioWanted ? "AUDIO: ON" : "AUDIO: OFF";
+}
+
+function stopAudioHard(){
+  const a = ui.ambience;
+  if (!a) return;
+  a.pause();
+  a.currentTime = 0;
+}
+
+function setupOneShotAudio(){
+  const a = ui.ambience;
+  if (!a) return;
+
+  a.loop = false;
+
+  a.addEventListener("ended", () => {
+    audioEndedOnce = true;
+    stopAudioHard();
+    audioWanted = false;
+    setAudioButton();
+  }, { once: true });
+}
+
+function tryPlayAudio(reason){
+  const a = ui.ambience;
+  if (!a) return;
+
+  a.volume = AUDIO_DEFAULT_VOLUME;
+
+  if (!audioWanted){
+    if (!a.paused) a.pause();
+    return;
+  }
+
+  if (audioEndedOnce) return;
+
+  const p = a.play();
+  if (p && typeof p.then === "function"){
+    p.then(() => { setAudioButton(); }).catch(() => { setAudioButton(); });
+  } else {
+    setAudioButton();
+  }
+}
+
+if (ui.audioBtn){
+  ui.audioBtn.addEventListener("click", () => {
+    audioWanted = !audioWanted;
+
+    if (!audioWanted){
+      stopAudioHard();
+    } else {
+      if (!audioEndedOnce) tryPlayAudio("manual");
+    }
+
+    setAudioButton();
+  });
 }
 
 const bootRotation = [
@@ -335,51 +397,6 @@ function startFeed(lineNode, subNode, clockNode, base, subPool, intervalMs){
   setInterval(() => updateFeedClock(clockNode), 30000);
 }
 
-let audioWanted = true;
-
-function setAudioButton(){
-  if (!ui.audioBtn) return;
-  ui.audioBtn.textContent = audioWanted ? "AUDIO: ON" : "AUDIO: OFF";
-}
-
-function tryPlayAudio(){
-  const a = ui.ambience;
-  if (!a) return;
-
-  a.volume = AUDIO_DEFAULT_VOLUME;
-
-  if (!audioWanted){
-    if (!a.paused) a.pause();
-    return;
-  }
-
-  const p = a.play();
-  if (p && typeof p.then === "function"){
-    p.then(() => {
-      setAudioButton();
-    }).catch(() => {
-      setAudioButton();
-    });
-  } else {
-    setAudioButton();
-  }
-}
-
-function stopAudio(){
-  const a = ui.ambience;
-  if (!a) return;
-  a.pause();
-}
-
-if (ui.audioBtn){
-  ui.audioBtn.addEventListener("click", () => {
-    audioWanted = !audioWanted;
-    if (!audioWanted) stopAudio();
-    else tryPlayAudio();
-    setAudioButton();
-  });
-}
-
 applyBackground();
 setSignalBoot();
 seedSessionFields();
@@ -420,10 +437,12 @@ startFeed(
   4100
 );
 
+setupOneShotAudio();
 setAudioButton();
-tryPlayAudio();
+tryPlayAudio("boot");
+
 setTimeout(() => {
-  tryPlayAudio();
+  tryPlayAudio("retry15s");
 }, AUDIO_RETRY_DELAY_MS);
 
 window.GameDetails = function(servername, serverurl, mapname, maxplayers, steamid, gamemode){
