@@ -1,6 +1,6 @@
 :root{
   --bg: #05070a;
-  --panel: rgba(12, 16, 24, 0.92); /* Opacité augmentée pour fond propre */
+  --panel: rgba(12, 16, 24, 0.92);
   --panel-border: rgba(255, 255, 255, 0.08);
 
   --impRed: rgba(255, 45, 45, .95);
@@ -64,9 +64,9 @@ body {
 /* --- CONSOLE WRAP (CADRE) --- */
 .wrap {
   position: relative; z-index: 10;
-  /* Dimensions fixes mais adaptatives pour éviter le débordement */
+  /* Dimensions fixes mais adaptatives */
   width: 96%; max-width: 1280px; 
-  height: 90vh; /* Hauteur fixe relative à l'écran */
+  height: 90vh; /* Hauteur fixe relative */
   max-height: 800px; /* Limite absolue pour garder la densité */
   
   background: rgba(8, 10, 14, 0.75);
@@ -79,7 +79,7 @@ body {
     inset 0 0 100px rgba(0, 0, 0, 0.5);
   
   backdrop-filter: blur(12px);
-  padding: 20px; /* Padding réduit pour gagner de la place */
+  padding: 20px;
   
   display: flex; flex-direction: column; gap: 12px;
 }
@@ -87,7 +87,7 @@ body {
 /* --- HEADER --- */
 .top {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 20px; height: 56px; flex-shrink: 0; /* Header compact */
+  gap: 20px; height: 56px; flex-shrink: 0;
 }
 .brand { display: flex; align-items: center; gap: 14px; }
 .logo {
@@ -110,7 +110,7 @@ body {
 
 /* --- GRILLE PRINCIPALE --- */
 .gridLayout {
-  flex: 1; /* Prend tout l'espace restant */
+  flex: 1;
   display: grid; grid-template-columns: 1.8fr 1fr;
   gap: 12px;
   min-height: 0; /* Crucial pour empêcher le débordement flex */
@@ -158,9 +158,9 @@ body {
 /* --- TERMINAL (CONTENU GAUCHE) --- */
 .terminal {
   flex: 1; 
-  padding: 12px; /* Padding réduit */
+  padding: 12px;
   font-family: var(--mono); font-size: 11px;
-  overflow: hidden; /* On cache le scrollbar, le contenu doit tenir */
+  overflow: hidden;
   display: flex; flex-direction: column; gap: 10px;
 }
 
@@ -169,9 +169,11 @@ body {
   flex: 1; min-height: 0; 
 }
 
+/* CORRECTIF: min-width: 0 empêche la colonne de s'élargir */
 .col { 
   display: flex; flex-direction: column; 
-  gap: 8px; /* Gap réduit pour gagner de la place verticale */
+  gap: 8px; 
+  min-width: 0; 
 }
 
 .blockTitle {
@@ -179,13 +181,13 @@ body {
   border-bottom: 1px solid var(--impRedSoft); padding-bottom: 2px; margin-bottom: 4px; font-weight: 700;
 }
 
-/* OPTIMISATION SPACE-SAVER : KV EN GRILLE 2x2 */
+/* KV GRILLE 2x2 */
 .kv {
   background: rgba(0,0,0,0.25); padding: 8px;
   border: 1px solid var(--panel-border); border-radius: 8px;
   display: grid;
-  grid-template-columns: 1fr 1fr; /* 2 Colonnes pour gagner de la hauteur */
-  gap: 4px 12px; /* Espacement serré */
+  grid-template-columns: 1fr 1fr; 
+  gap: 4px 12px; 
 }
 .kvRow { display: flex; justify-content: space-between; }
 .kk { color: var(--muted); opacity: 0.7; font-size: 9px; }
@@ -193,22 +195,31 @@ body {
 
 .divider { height: 1px; background: rgba(255,255,255,0.05); width: 100%; margin: 4px 0; }
 
-/* LOG QUI PREND LA PLACE RESTANTE */
+/* LOGS */
 .log {
-  flex: 1; /* Prend tout l'espace dispo mais accepte de rétrécir */
-  min-height: 60px; /* Hauteur mini garantie */
+  flex: 1; 
+  min-height: 60px; 
   font-size: 10px; line-height: 1.4; color: var(--text); opacity: 0.95;
   border-left: 2px solid var(--impRedSoft); padding-left: 8px;
   display: flex; flex-direction: column; justify-content: flex-end;
   background: linear-gradient(90deg, rgba(0,0,0,0.2), transparent); border-radius: 0 4px 4px 0;
   overflow: hidden;
 }
-.line { margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
+
+/* CORRECTIF: Truncation du texte */
+.line { 
+  margin-bottom: 1px; 
+  white-space: nowrap;      /* Une seule ligne */
+  overflow: hidden;         /* Coupe ce qui dépasse */
+  text-overflow: ellipsis;  /* Ajoute "..." */
+  max-width: 100%;          /* Ne dépasse jamais le parent */
+  display: block;
+} 
 .dim { opacity: 0.5; }
 
-/* CHANNEL & DATA FLUX (Partie critique qui était coupée) */
+/* CHANNEL & DATA FLUX */
 .cursorRow {
-  margin-top: auto; /* Pousse vers le bas si espace */
+  margin-top: auto;
   display: flex; align-items: center; gap: 8px;
   padding: 6px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: rgba(0,0,0,0.2);
 }
@@ -226,7 +237,7 @@ body {
 @keyframes fluxMove { 0%{ transform: translateX(-100%);} 100%{ transform: translateX(300%);} }
 .fluxNoise { position: absolute; inset: 0; background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='); opacity: 0.05; pointer-events: none; }
 
-/* TACTICAL COLUMN (DROITE) */
+/* TACTICAL COLUMN */
 .tactical { display: flex; flex-direction: column; gap: 4px; }
 .tRow { display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 2px; }
 .tK { color: var(--muted); letter-spacing: 0.1em; font-size: 9px; }
@@ -248,7 +259,7 @@ body {
 .uK { font-size: 9px; color: var(--muted); display: block; }
 .uV { font-size: 10px; color: #fff; font-weight: bold; margin-top: 1px; }
 
-/* PROGRESS BAR (FOOTER) */
+/* FOOTER */
 .progress {
   margin-top: auto; padding: 10px 14px; background: rgba(0,0,0,0.2); border-top: 1px solid var(--panel-border);
 }
@@ -259,7 +270,6 @@ body {
 }
 .progressMeta { display: flex; justify-content: space-between; font-size: 10px; font-family: var(--mono); color: var(--muted); }
 
-/* BOTTOM HINTS */
 .bottomHints {
   padding: 8px 14px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(255,255,255,0.04);
 }
@@ -271,7 +281,7 @@ body {
   white-space: nowrap; min-width: 65px; text-align: center;
 }
 
-/* --- SIDE PANEL (DROITE) --- */
+/* --- SIDE PANEL --- */
 .sidePanel { display: flex; flex-direction: column; }
 .feeds {
   flex: 1; overflow: hidden; padding: 12px; display: flex; flex-direction: column; gap: 10px;
@@ -297,7 +307,7 @@ body {
 }
 .cardTitle { color: var(--impRed); font-weight: bold; margin-bottom: 2px; }
 
-/* TACTICAL GRID SIDEBAR */
+/* TACTICAL GRID */
 .deployment-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px;
 }
@@ -334,7 +344,7 @@ body {
 /* --- RESPONSIVE GMOD (Laptop friendly) --- */
 @media (max-width: 1100px) {
   .gridLayout { grid-template-columns: 1fr; }
-  .sidePanel { display: none; } /* Cache la droite sur petit écran */
+  .sidePanel { display: none; }
   .wrap { width: 98%; height: 95vh; max-height: none; padding: 12px; }
   .terminal { padding: 10px; }
 }
